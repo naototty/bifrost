@@ -82,8 +82,7 @@
           chdir: /home/vagrant/bifrost
 
     - name: Install Bifrost
-      ## command: ansible-playbook -vvvv -i inventory/localhost install.yaml -e network_interface={{network_interface}}
-      command: ansible-playbook -vvvv -i inventory/target install.yaml -e network_interface={{network_interface}}
+      command: ansible-playbook -vvvv -i inventory/localhost install.yaml -e network_interface={{network_interface}}
       environment:
           PATH: "{{ansible_env.HOME}}/.local/bin:{{ansible_env.PATH}}"
       args:

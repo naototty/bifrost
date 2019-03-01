@@ -23,7 +23,8 @@ BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
 # placed in the configuration drive. The "build image" test does not
 # use cirros.
 
-VM_MEMORY_SIZE="3072"
+############# VM_MEMORY_SIZE="3072"
+VM_MEMORY_SIZE="2048"
 VM_DOMAIN_TYPE=qemu
 export VM_DISK_CACHE="unsafe"
 TEST_VM_NUM_NODES=1

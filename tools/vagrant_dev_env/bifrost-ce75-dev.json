@@ -1,0 +1,15 @@
+{
+  "description": "bifrost-ce75-dev x86_64",
+  "short_description": "bifrost-ce75-dev",
+  "name": "ce75-dev",
+  "versions": [{
+    "version": "0.0.1",
+    "status": "active",
+    "description_html": "<p>bifrost-ce75-dev x86_64</p>",
+    "description_markdown": "bifrost-ce75-dev x86_64",
+    "providers": [{
+      "name": "virtualbox",
+      "url": "https://coha.tw/pub/bifrost-ce75-dev.box",
+    }]
+  }]
+}

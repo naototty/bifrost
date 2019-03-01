@@ -18,12 +18,10 @@ mysql_password:
 # to configuration drives. When set, it should be set in both baremetal
 # and localhost groups, however this is only an override to the default.
 # ssh_public_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
-ssh_public_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
 
 # If testing is true, then the environment is setup for using libvirt
 # virtual machines for the hardware instead of real hardware.
 # testing: true
-testing: true
 
 # The default port to download files via.  Required for IPA URL generation.
 # Presently the defaults are located in the roles, however if changed both
@@ -63,7 +61,7 @@ transform_boot_image: false
 
 # Create IPA image instead of downloading an pre-made CoreOS IPA image.
 ### create_ipa_image: false
-create_ipa_image: true
+create_ipa_image: false
 
 # Dnsmasq default route for clients. If not defined, dnsmasq will push to
 # clients as default route the same IP of the dnsmasq server.

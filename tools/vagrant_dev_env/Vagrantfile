@@ -3,10 +3,24 @@
 
 VAGRANTFILE_API_VERSION = '2'
 
+
 ansible_install_root=(ENV['ANSIBLE_INSTALL_ROOT'] || "/opt/stack")
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = 'ubuntu/trusty64'
+  ## ssh config default setup
+  config.ssh.forward_agent    = true
+  config.ssh.insert_key       = false
+  config.ssh.private_key_path = ["~/.vagrant.d/insecure_private_key", "~/.ssh/id_rsa"]
+
+  ## config.vm.box = 'ubuntu/trusty64'
+  #### config.vm.box = 'ubuntu/trusty64'
+  ## config.vm.box = "generic/centos7"
+  ## config.vm.box_version = "1.8.60"
+  ## config.vm.box_version = "1809.01"
+  ## https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1805_01.VirtualBox.box
+  config.vm.box_url = "https://coha.tw/pub/bifrost-ce75-dev.json"
+  config.vm.box = "ce75-dev"
+
 
   config.vm.define 'bifrost' do |bifrost|
     bifrost.vm.provider :virtualbox do |vb|
@@ -26,20 +40,77 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       SHELL
     end
 
-    # Set up private NAT'd network
+    # Set up private NAT'd network <<== eth1
     bifrost.vm.network 'private_network', ip: '192.168.99.10' # it goes to 11
+    ## ==========================================================================
     # This assumes you have DHCP on your bridged network. if not you will need
     # to statically configure to allow  Bifrost to manage hardware attached to
     # the bridged interface.
     # NOTE(TheJulia): Is there a way to abstract the bridged networking...
     # NOTE(NobodyCam): until the above is  done this needs to be set to a valid interface
-    bifrost.vm.network 'public_network', bridge: ''
+
+    # Set up public_network <<== eth2
+    ##### bifrost.vm.network 'public_network', bridge: ''
+    ## bifrost.vm.network 'public_network', bridge: 'en0:'
+    bifrost.vm.network 'public_network', bridge: 'en0: Wi-Fi (Wireless)'
 
     # besure we get the entire bifrost directory tree
-    bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "rsync"
+    ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "rsync"
+    ## bifrost.vm.synced_folder "../../.", "/vagrant", type: "virtualbox"
+    ####### bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "virtualbox"
+    bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "nfs"
 
-    bifrost.vm.provision 'ansible' do |ansible|
-      ansible.verbose = 'v'
+    ## addedd GMO baremetal
+    bifrost.vm.provision "file", source: "~/.ssh/id_rsa", destination: "~/.ssh/id_rsa_2"
+    bifrost.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/me.pub"
+    bifrost.vm.provision "shell" do |s|
+      ssh_prv_key = ''
+      ssh_pub_key = ''
+      if File.file?("#{Dir.home}/.ssh/id_rsa")
+        ssh_prv_key = File.read("#{Dir.home}/.ssh/id_rsa")
+        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+      else
+        puts "No SSH key found. You will need to remedy this before pushing to the repository."
+      end
+      s.inline = <<-SHELL
+        hostname;
+        ls -lv ~/.ssh/;
+        if grep -sq "#{ssh_pub_key}" /home/vagrant/.ssh/authorized_keys; then
+          echo "SSH keys already provisioned."
+          exit 0;
+        fi
+        echo "SSH key provisioning."
+        mkdir -p /home/vagrant/.ssh/
+        touch /home/vagrant/.ssh/authorized_keys
+        echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+        echo #{ssh_pub_key} > /home/vagrant/.ssh/id_rsa.pub
+        chmod 644 /home/vagrant/.ssh/id_rsa.pub
+        echo "#{ssh_prv_key}" > /home/vagrant/.ssh/id_rsa
+        chmod 600 /home/vagrant/.ssh/id_rsa
+        chown -R vagrant:vagrant /home/vagrant
+	## root
+        if grep -sq "#{ssh_pub_key}" /root/.ssh/authorized_keys; then
+          echo "SSH keys already provisioned."
+          exit 0;
+        fi
+        echo "SSH key provisioning."
+        mkdir -p /root/.ssh/
+        touch /rootr/.ssh/authorized_keys
+        echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
+        echo #{ssh_pub_key} > /root/.ssh/id_rsa.pub
+        chmod 644 /root/.ssh/id_rsa.pub
+        echo "#{ssh_prv_key}" > /root/.ssh/id_rsa
+        chmod 600 /root/.ssh/id_rsa
+        exit 0
+      SHELL
+    end
+
+    bifrost.vm.provision 'ansible_local' do |ansible|
+      ## added for 'ansible_local'
+      ansible.version = '2.7.4'
+      ansible.install_mode = 'pip'
+      ## 
+      ansible.verbose = 'vvv'
       ansible.playbook = 'vagrant.yml'
       ansible.extra_vars = {
           # set key file name here
@@ -49,7 +120,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           #  eth0 - connected to a Nat network
           #  eth1 - connected to Host-only network named: 'vboxnet1'
           #  eth2 - bridged - Interface must also be set above
-          network_interface: 'eth2'
+          ######## network_interface: 'eth2'
+          network_interface: 'eth1'
       }
     end
   end
