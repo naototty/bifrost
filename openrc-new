@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# WARNING: This file is managed by bifrost.
+export IRONIC_URL=http://localhost:6385
+export OS_AUTH_TOKEN='fake-token'
+export OS_TOKEN='fake-token'
+export OS_URL=http://localhost:6385

@@ -10,7 +10,9 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="${USE_VENV:-false}"
 BUILD_IMAGE="false"
-BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+## BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+BAREMETAL_DATA_FILE=/home/vagrant/bifrost/playbooks/inventory/baremetal.json
+
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
@@ -80,7 +82,8 @@ mysql_setup() {
 
 # Setup openstack_citest database if run in OpenStack CI.
 if [ "$ZUUL_BRANCH" != "" ] ; then
-    mysql_setup
+    ## mysql_setup
+    echo "mysql_setup"
 fi
 
 # NOTE(cinerama): We could remove this if we change the CI job to use
@@ -90,28 +93,29 @@ if [ $SOURCE = "test-bifrost-inventory-dhcp.sh" ]; then
      USE_DHCP="true"
 elif [ $SOURCE = "test-bifrost-venv.sh" ]; then
      USE_VENV="true"
-elif [ $SOURCE = "test-bifrost-build-images.sh" ]; then
-     BUILD_IMAGE="true"
-elif [ $SOURCE = "test-bifrost-keystone-auth.sh" ]; then
-     ENABLE_KEYSTONE="true"
+  ## 使わない機能をコメントアウト
+  ## elif [ $SOURCE = "test-bifrost-build-images.sh" ]; then
+  ##      BUILD_IMAGE="true"
+  ## elif [ $SOURCE = "test-bifrost-keystone-auth.sh" ]; then
+  ##      ENABLE_KEYSTONE="true"
 fi
 
-if [ ${USE_VENV} = "true" ]; then
-    export VENV=/opt/stack/bifrost
-    $SCRIPT_HOME/env-setup.sh
-    # Note(cinerama): activate is not compatible with "set -u";
-    # disable it just for this line.
-    set +u
-    source ${VENV}/bin/activate
-    set -u
-    ANSIBLE=${VENV}/bin/ansible-playbook
-    ENABLE_VENV="true"
-    ANSIBLE_PYTHON_INTERP=${VENV}/bin/python
-else
+## if [ ${USE_VENV} = "true" ]; then
+##     export VENV=/opt/stack/bifrost
+##     $SCRIPT_HOME/env-setup.sh
+##     # Note(cinerama): activate is not compatible with "set -u";
+##     # disable it just for this line.
+##     set +u
+##     source ${VENV}/bin/activate
+##     set -u
+##     ANSIBLE=${VENV}/bin/ansible-playbook
+##     ENABLE_VENV="true"
+##     ANSIBLE_PYTHON_INTERP=${VENV}/bin/python
+## else
     $SCRIPT_HOME/env-setup.sh
     ANSIBLE=${HOME}/.local/bin/ansible-playbook
     ANSIBLE_PYTHON_INTERP=$(which python)
-fi
+## fi
 
 # Adjust options for DHCP, VM, or Keystone tests
 if [ ${USE_DHCP} = "true" ]; then
@@ -122,17 +126,17 @@ if [ ${USE_DHCP} = "true" ]; then
     INVENTORY_DHCP=true
     INVENTORY_DHCP_STATIC_IP=true
     WRITE_INTERFACES_FILE=false
-elif [ ${BUILD_IMAGE} = "true" ]; then
-    USE_CIRROS=false
-    TESTING_USER=root
-    VM_MEMORY_SIZE="4096"
-    ENABLE_INSPECTOR=false
-    INSPECT_NODES=false
-    DOWNLOAD_IPA=false
-    CREATE_IPA_IMAGE=true
-elif [ ${ENABLE_KEYSTONE} = "true" ]; then
-    NOAUTH_MODE=false
-    CLOUD_CONFIG="-e cloud_name=bifrost"
+  ## elif [ ${BUILD_IMAGE} = "true" ]; then
+  ##     USE_CIRROS=false
+  ##     TESTING_USER=root
+  ##     VM_MEMORY_SIZE="4096"
+  ##     ENABLE_INSPECTOR=false
+  ##     INSPECT_NODES=false
+  ##     DOWNLOAD_IPA=false
+  ##     CREATE_IPA_IMAGE=true
+  ## elif [ ${ENABLE_KEYSTONE} = "true" ]; then
+  ##     NOAUTH_MODE=false
+  ##     CLOUD_CONFIG="-e cloud_name=bifrost"
 fi
 
 logs_on_exit() {

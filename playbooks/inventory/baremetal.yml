@@ -1,0 +1,25 @@
+---
+  testvm1:
+    ipa_kernel_url: "http://192.168.122.1:8080/ipa.image-custom-f29mini.vmlinuz"
+    ipa_ramdisk_url: "http://192.168.122.1:8080/ipa.image-custom-f29mini.initramfs"
+    uuid: "4e41df61-84b1-5856-bfb6-6b5f2cd3dd11"
+    driver_info:
+      power:
+        ipmi_username: "ADMIN"
+        ipmi_address: "192.168.122.1"
+        ipmi_port: "623"
+        ipmi_password: "ADMIN"
+    nics:
+      -
+        mac: "52:54:00:d2:ae:66"
+    instance_info:
+      image_source: "http://192.168.122.1:8080/deployment_image.qcow2"
+      image_checksum: "12fe33dfa586841f838800432d6a212b"
+    driver: "ipmi"
+    ipv4_address: "192.168.122.2"
+    properties:
+      cpu_arch: "x86_64"
+      ram: "2048"
+      disk_size: "15"
+      cpus: "1"
+    name: "testvm1"

@@ -1,0 +1,32 @@
+{
+    "testvm1": {
+        "driver": "ipmi", 
+        "driver_info": {
+            "power": {
+                "ipmi_address": "192.168.122.1", 
+                "ipmi_password": "ADMIN", 
+                "ipmi_port": "623", 
+                "ipmi_username": "ADMIN"
+            }
+        }, 
+        "host_groups": [
+            "baremetal"
+        ], 
+        "ansible_ssh_host": "192.168.122.2", 
+        "ipv4_address": "192.168.122.2", 
+        "name": "testvm1", 
+        "nics": [
+            {
+                "mac": "52:54:00:d2:ae:66"
+            }
+        ], 
+        "properties": {
+            "cpu_arch": "x86_64", 
+            "cpus": "1", 
+            "disk_size": "15", 
+            "ram": "2048"
+        }, 
+        "uuid": "4e41df61-84b1-5856-bfb6-6b5f2cd3dd11"
+    }
+
+}

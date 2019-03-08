@@ -83,7 +83,7 @@
 
     - name: Install Bifrost
       ## command: ansible-playbook -vvvv -i inventory/localhost install.yaml -e network_interface={{network_interface}}
-      command: ansible-playbook -vvvv -i inventory/target install.yaml -e network_interface={{network_interface}}
+      command: ansible-playbook -vvv -i inventory/target install.yaml -e network_interface={{network_interface}} -e extra_dib_elements=devuser -e ipa_upstream_release=stable-queens -e dib_os_release=xenial -e dib_os_element=ubuntu-minimal -e staging_drivers_include=true
       environment:
           PATH: "{{ansible_env.HOME}}/.local/bin:{{ansible_env.PATH}}"
       args:

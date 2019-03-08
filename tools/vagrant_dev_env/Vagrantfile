@@ -3,6 +3,7 @@
 
 VAGRANTFILE_API_VERSION = '2'
 
+do_as_bifrost_install = false
 
 ansible_install_root=(ENV['ANSIBLE_INSTALL_ROOT'] || "/opt/stack")
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -11,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent    = true
   config.ssh.insert_key       = false
   config.ssh.private_key_path = ["~/.vagrant.d/insecure_private_key", "~/.ssh/id_rsa"]
+  config.ssh.forward_x11      = true
 
   ## config.vm.box = 'ubuntu/trusty64'
   #### config.vm.box = 'ubuntu/trusty64'
@@ -52,13 +54,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Set up public_network <<== eth2
     ##### bifrost.vm.network 'public_network', bridge: ''
     ## bifrost.vm.network 'public_network', bridge: 'en0:'
-    bifrost.vm.network 'public_network', bridge: 'en0: Wi-Fi (Wireless)'
+    ## bifrost.vm.network 'public_network', bridge: 'en0: Wi-Fi (Wireless)'
+    bifrost.vm.network 'private_network', ip: '192.168.203.10' # it goes to 11
 
     # besure we get the entire bifrost directory tree
     ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "rsync"
     ## bifrost.vm.synced_folder "../../.", "/vagrant", type: "virtualbox"
-    ####### bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "virtualbox"
-    bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "nfs"
+    bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "virtualbox"
+    ## nfs ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "nfs", mount_options: ['rw', 'vers=3', 'tcp', 'fsc', 'actimeo=2']
+    ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "sshfs"
+    ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "smb", smb_username: "usr0101039", smb_password: "fc999Bem"
+    ## bifrost.vm.synced_folder "../../.", "/home/vagrant/bifrost", type: "smb", mount_options: ['username=usr0101039', 'password=fc999Bem']
+    ##### default work dir synced_folder
+    bifrost.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    ## nfs ## bifrost.vm.synced_folder ".", "/vagrant", type: "nfs", mount_options: ['rw', 'vers=3', 'tcp', 'fsc', 'actimeo=2']
+    ## bifrost.vm.synced_folder ".", "/vagrant", type: "sshfs"
+    ## bifrost.vm.synced_folder ".", "/vagrant", type: "smb", smb_username: "usr0101039", smb_password: "fc999Bem"
+    ## bifrost.vm.synced_folder ".", "/vagrant", type: "smb", mount_options: ['username=usr0101039', 'password=fc999Bem']
 
     ## addedd GMO baremetal
     bifrost.vm.provision "file", source: "~/.ssh/id_rsa", destination: "~/.ssh/id_rsa_2"
@@ -79,6 +91,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           echo "SSH keys already provisioned."
           exit 0;
         fi
+	echo "gui env. installing."
+        yum -y install neovim tmux rpm-build-libs.x86_64 rpm-build.x86_64
+	## yum -y groupinstall "Server with GUI"
+        ## yum -y install virt-manager.noarch neovim epel-release
+	##
+	##yum -y install \
+        ##      ansible \
+        ##      ansible-doc.noarch \
+        ##      ansible-inventory-grapher.noarch \
+        ##      ansible-openstack-modules.noarch \
+        ##      ansible-review.noarch \
+        ##      ansible-lint.noarch \
+        ##      centos-release-openstack-rocky.noarch
+	##
         echo "SSH key provisioning."
         mkdir -p /home/vagrant/.ssh/
         touch /home/vagrant/.ssh/authorized_keys
@@ -87,15 +113,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         chmod 644 /home/vagrant/.ssh/id_rsa.pub
         echo "#{ssh_prv_key}" > /home/vagrant/.ssh/id_rsa
         chmod 600 /home/vagrant/.ssh/id_rsa
-        chown -R vagrant:vagrant /home/vagrant
+        sudo chown -R vagrant:vagrant /home/vagrant
 	## root
         if grep -sq "#{ssh_pub_key}" /root/.ssh/authorized_keys; then
           echo "SSH keys already provisioned."
           exit 0;
         fi
+	##
         echo "SSH key provisioning."
         mkdir -p /root/.ssh/
-        touch /rootr/.ssh/authorized_keys
+        touch /root/.ssh/authorized_keys
         echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
         echo #{ssh_pub_key} > /root/.ssh/id_rsa.pub
         chmod 644 /root/.ssh/id_rsa.pub
@@ -107,11 +134,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     bifrost.vm.provision 'ansible_local' do |ansible|
       ## added for 'ansible_local'
-      ansible.version = '2.7.4'
+      ansible.version = '2.7.8'
       ansible.install_mode = 'pip'
       ## 
-      ansible.verbose = 'vvv'
-      ansible.playbook = 'vagrant.yml'
+      ## ansible.verbose = 'vvv'
+      ansible.verbose = 'vv'
+      ansible.playbook = 'vagrant_pre.yml'
       ansible.extra_vars = {
           # set key file name here
           ansible_install_root: ansible_install_root,
@@ -121,8 +149,44 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           #  eth1 - connected to Host-only network named: 'vboxnet1'
           #  eth2 - bridged - Interface must also be set above
           ######## network_interface: 'eth2'
-          network_interface: 'eth1'
+          ############# network_interface: 'eth1'
+          network_interface: 'eth2'
       }
+    end
+    ##
+    ##     - name: Install Bifrost
+    ##       command: ansible-playbook -vvv -i inventory/target install.yaml -e network_interface={{network_interface}} -e extra_dib_elements=devuser -e ipa_upstream_release=stable-queens -e dib_os_release=xenial -e dib_os_element=ubuntu-minimal
+    ##       environment:
+    ##           PATH: "{{ansible_env.HOME}}/.local/bin:{{ansible_env.PATH}}"
+    ##       args:
+    ##           chdir: /home/vagrant/bifrost/playbooks
+    if do_as_bifrost_install
+      bifrost.vm.provision 'ansible_local' do |ansible|
+        ## added for 'ansible_local'
+        ansible.version = '2.7.8'
+        ansible.install_mode = 'pip'
+        ## 
+        ## ansible.verbose = 'vvv'
+        ansible.verbose = 'vvv'
+        ansible.provisioning_path = '/home/vagrant/bifrost/playbooks'
+        ansible.inventory_path    = '/home/vagrant/bifrost/playbooks/inventory/target'
+        ansible.playbook = 'install.yaml'
+        ansible.extra_vars = {
+            # set key file name here
+            ansible_install_root: ansible_install_root,
+            public_key: 'id_rsa.pub',
+            ############# network_interface: 'eth1'
+            network_interface: 'eth2',
+            ## additional option (gmo)
+            extra_dib_elements: 'devuser',
+            create_image_via_dib: 'true',
+            transform_boot_image: 'false',
+            ipa_upstream_release: 'stable-queens',
+            dib_os_release: 'xenial',
+            dib_os_element: 'ubuntu-minimal',
+            staging_drivers_include: 'true'
+        }
+      end
     end
   end
 end

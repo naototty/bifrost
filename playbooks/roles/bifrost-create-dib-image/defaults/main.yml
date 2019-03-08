@@ -1,5 +1,7 @@
 ---
-dib_os_element: "debian"
+dib_os_element: "ubuntu"
+dib_os_release: "xenial"
+dib_elements: "vm enable-serial-console"
 dib_init_element: "simple-init"
 dib_env_vars:
   http_proxy: "{{ lookup('env','http_proxy') }}"
