@@ -835,10 +835,58 @@ lrwxrwxrwx. 1 ironic ironic  46  3月  7 07:31 52-54-00-d2-ae-66 -> ../4e41df61-
 
 
 
+[vagrant@localhost playbooks]$ openstack baremetal node list
+WARNING: yacc table file version is out of date
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
+| UUID                                 | Name    | Instance UUID | Power State | Provisioning State | Maintenance |
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
+| 4e41df61-84b1-5856-bfb6-6b5f2cd3dd11 | testvm1 | None          | None        | deploy failed      | True        |
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
+[vagrant@localhost playbooks]$ openstack baremetal node rebuild testvm1
+WARNING: yacc table file version is out of date
+The provisioning operation can't be performed on node 4e41df61-84b1-5856-bfb6-6b5f2cd3dd11 because it's in maintenance mode. (HTTP 400)
+
+
+[vagrant@localhost playbooks]$ openstack baremetal node maintenance unset testvm1
+WARNING: yacc table file version is out of date
 
 
 
+[vagrant@localhost playbooks]$ openstack baremetal node rebuild testvm1
+WARNING: yacc table file version is out of date
+[vagrant@localhost playbooks]$ openstack baremetal node list
+WARNING: yacc table file version is out of date
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
+| UUID                                 | Name    | Instance UUID | Power State | Provisioning State | Maintenance |
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
+| 4e41df61-84b1-5856-bfb6-6b5f2cd3dd11 | testvm1 | None          | None        | deploying          | False       |
++--------------------------------------+---------+---------------+-------------+--------------------+-------------+
 
+
+
+## 5th test
+unset OS_AUTH_TOKEN
+unset OS_TOKEN
+export BIFROST_INVENTORY_SOURCE=/home/vagrant/bifrost/playbooks/inventory/baremetal.yml; ansible-playbook -vvvv -i inventory/bifrost_inventory.py enroll-dynamic.yaml
+
+
+export BIFROST_INVENTORY_SOURCE=/home/vagrant/bifrost/playbooks/inventory/baremetal.yml; inventory/bifrost_inventory.py
+
+export BIFROST_INVENTORY_SOURCE=/home/vagrant/bifrost/playbooks/inventory/baremetal.yml; ansible-playbook -vvvv -i inventory/bifrost_inventory.py deploy-dynamic.yaml
+
+
+
+[vagrant@localhost conoha-bifrost]$ git push origin r2019-0308
+Counting objects: 135, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (123/123), done.
+Writing objects: 100% (131/131), 34.87 MiB | 937.00 KiB/s, done.
+Total 131 (delta 11), reused 0 (delta 0)
+remote: Resolving deltas: 100% (11/11), completed with 2 local objects.
+To git@github.com:naototty/conoha-bifrost.git
+ * [new tag]         r2019-0308 -> r2019-0308
+[vagrant@localhost conoha-bifrost]$ git push origin --tags
+Everything up-to-date
 
 
 
