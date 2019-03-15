@@ -1,0 +1,25 @@
+#cloud-config
+
+locale: ja_JP.UTF-8
+
+timezone: Asia/Tokyo
+
+users:
+  - name: root
+    password: $1$SaltSalt$XPc2oS2ljl.tEedEEPDVy.
+## root password is dr****
+
+disable_root: false
+ssh_pwauth: true
+
+## chpasswd:
+##   expire: False
+##   list:
+##     root:dr86Fatc
+ 
+runcmd:
+  - echo "cloud-config:" `date` > /root/deploy-date.txt
+  - echo "uuid:" "{{ uuid }}" >> /root/deploy-date.txt
+  - echo "hostname:" "{{ name|to_json }}" >> /root/deploy-date.txt
+
+output : { all : '| tee -a /var/log/cloud-init-output.log' }

@@ -37,6 +37,20 @@
     dest: "{{ variable_configdrive_location.stdout }}/{{ uuid }}/openstack/{{ item }}/meta_data.json"
   with_items: "{{ metadata_versions }}"
 
+- name: "Place user_data template in each openstack/<version> folder"
+  template:
+    src: openstack_user_data.cloud_config.j2
+    dest: "{{ variable_configdrive_location.stdout }}/{{ uuid }}/openstack/{{ item }}/user_data"
+  with_items: "{{ metadata_versions }}"
+  when: user_data_file is undefined or "default" in user_data_file
+
+- name: "Place user_data template in each openstack/<version> folder"
+  copy:
+    src: "{{ user_data_file }}"
+    dest: "{{ variable_configdrive_location.stdout }}/{{ uuid }}/openstack/{{ item }}/user_data"
+  with_items: "{{ metadata_versions }}"
+  when: user_data_file is defined or "default" not in user_data_file
+
 - name: "Generate network_data"
   network_metadata:
     ipv4_address: "{{ ipv4_address | default('') }}"

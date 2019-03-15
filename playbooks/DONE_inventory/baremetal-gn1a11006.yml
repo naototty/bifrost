@@ -1,0 +1,24 @@
+---
+  gn1a11006.h1.tyo1.hpc1.internal-gmo:
+    ipa_kernel_url: "http://172.29.129.217:8080/ipa.image-custom-f29mini.vmlinuz"
+    ipa_ramdisk_url: "http://172.29.129.217:8080/ipa.image-custom-f29mini.initramfs"
+    uuid: "3d372cdf-a76a-44a3-a09b-61966fde64ba"
+    driver_info:
+      power:
+        ipmi_username: "ADMIN"
+        ipmi_address: "172.29.128.16"
+        ipmi_password: "ADMIN"
+    nics:
+      -
+        mac: "ac:1f:6b:41:d3:22"
+    instance_info:
+      image_source: "http://172.29.129.217:8080/deployment_image2nd.qcow2"
+      image_checksum: "afe7035ee465722b718859b8380d2c5b"
+    driver: "ipmi"
+    ipv4_address: "172.29.129.16"
+    properties:
+      cpu_arch: "x86_64"
+      ram: "131072"
+      disk_size: "300"
+      cpus: "16"
+    name: "gn1a11006.h1.tyo1.hpc1.internal-gmo"

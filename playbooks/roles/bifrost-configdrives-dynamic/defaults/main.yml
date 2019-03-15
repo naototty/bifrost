@@ -3,7 +3,8 @@
 # a debian style interfaces file into the configuration drive file
 # such that cirros will receive basic network configuration when
 # performing basic testing.
-write_interfaces_file: false
+##### write_interfaces_file: false
+write_interfaces_file: true
 http_boot_folder: /httpboot
 # Default location to the ssh public key for the user operating Bifrost.
 ssh_public_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
