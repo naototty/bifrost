@@ -67,4 +67,5 @@ node_default_network_interface: eth0
 ipv4_subnet_mask: 255.255.254.0
 ipv4_gateway: 172.29.128.1
 ipv4_nameserver: 8.8.8.8
+network_mtu: "1500"
 
